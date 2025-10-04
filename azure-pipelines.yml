@@ -15,3 +15,80 @@ variables:
 steps:
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
+
+  # 1. Installer la version du SDK .NET requise
+- task: UseDotNet@2
+  displayName: 'Installer .NET SDK'
+  inputs:
+    packageType: 'sdk'
+    version: '6.0.x'   # Exemple : version 6 du SDK .NET
+
+# 2. Installer les dépendances Node.js
+- task: Npm@1
+  displayName: 'Installer packages Node.js'
+  inputs:
+    command: 'install'
+    workingDir: 'Tailspin.SpaceGame.Web'
+
+# 3. Compiler Sass (.scss -> .css)
+- script: |
+    npx node-sass Tailspin.SpaceGame.Web/wwwroot
+  displayName: 'Compiler Sass en CSS'
+
+# 4. Minifier les fichiers JavaScript et CSS avec gulp
+- task: Gulp@1
+  displayName: 'Minifier JS et CSS'
+  inputs:
+    gulpFile: 'gulpfile.js'
+    targets: 'default'
+
+# 5. Générer un fichier d’information sur la build
+- script: |
+    echo "Pipeline: $(Build.DefinitionName)" > Tailspin.SpaceGame.Web/wwwroot/buildinfo.txt
+    echo "Build ID: $(Build.BuildId)" >> Tailspin.SpaceGame.Web/wwwroot/buildinfo.txt
+    echo "Build Number: $(Build.BuildNumber)" >> Tailspin.SpaceGame.Web/wwwroot/buildinfo.txt
+  displayName: 'Écrire les infos de build'
+
+# 6. Restaurer les dépendances .NET
+- task: DotNetCoreCLI@2
+  displayName: 'Restaurer dépendances .NET'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+
+# 7. Build Debug
+- task: DotNetCoreCLI@2
+  displayName: 'Build Debug'
+  inputs:
+    command: 'build'
+    arguments: '--configuration Debug'
+    projects: '**/*.csproj'
+
+# 8. Publish Debug
+- task: DotNetCoreCLI@2
+  displayName: 'Publier en Debug'
+  inputs:
+    command: 'publish'
+    arguments: '--no-build --configuration Debug --output $(Build.ArtifactStagingDirectory)/Debug'
+    projects: '**/*.csproj'
+
+# 9. Build Release
+- task: DotNetCoreCLI@2
+  displayName: 'Build Release'
+  inputs:
+    command: 'build'
+    arguments: '--configuration Release'
+    projects: '**/*.csproj'
+
+# 10. Publish Release
+- task: DotNetCoreCLI@2
+  displayName: 'Publier en Release'
+  inputs:
+    command: 'publish'
+    arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
+    projects: '**/*.csproj'
+
+# 11. Sauvegarder les artefacts (Debug + Release)
+- publish: $(Build.ArtifactStagingDirectory)
+  displayName: 'Publier les artefacts'
+  artifact: drop
