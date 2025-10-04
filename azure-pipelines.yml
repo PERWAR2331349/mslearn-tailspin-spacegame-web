@@ -30,46 +30,5 @@ steps:
     echo "Build Number: $(Build.BuildNumber)" >> Tailspin.SpaceGame.Web/wwwroot/buildinfo.txt
   displayName: 'Écrire les infos de build'
 
-# 6. Restaurer les dépendances .NET
-- task: DotNetCoreCLI@2
-  displayName: 'Restaurer dépendances .NET'
-  inputs:
-    command: 'restore'
-    projects: '**/*.csproj'
 
-# 7. Build Debug
-- task: DotNetCoreCLI@2
-  displayName: 'Build Debug'
-  inputs:
-    command: 'build'
-    arguments: '--configuration Debug'
-    projects: '**/*.csproj'
 
-# 8. Publish Debug
-- task: DotNetCoreCLI@2
-  displayName: 'Publier en Debug'
-  inputs:
-    command: 'publish'
-    arguments: '--no-build --configuration Debug --output $(Build.ArtifactStagingDirectory)/Debug'
-    projects: '**/*.csproj'
-
-# 9. Build Release
-- task: DotNetCoreCLI@2
-  displayName: 'Build Release'
-  inputs:
-    command: 'build'
-    arguments: '--configuration Release'
-    projects: '**/*.csproj'
-
-# 10. Publish Release
-- task: DotNetCoreCLI@2
-  displayName: 'Publier en Release'
-  inputs:
-    command: 'publish'
-    arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
-    projects: '**/*.csproj'
-
-# 11. Sauvegarder les artefacts (Debug + Release)
-- publish: $(Build.ArtifactStagingDirectory)
-  displayName: 'Publier les artefacts'
-  artifact: drop
