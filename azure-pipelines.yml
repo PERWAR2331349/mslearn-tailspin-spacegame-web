@@ -23,25 +23,6 @@ steps:
     packageType: 'sdk'
     version: '6.0.x'   # Exemple : version 6 du SDK .NET
 
-# 2. Installer les dépendances Node.js
-- task: Npm@1
-  displayName: 'Installer packages Node.js'
-  inputs:
-    command: 'install'
-    workingDir: 'Tailspin.SpaceGame.Web'
-
-# 3. Compiler Sass (.scss -> .css)
-- script: |
-    npx node-sass Tailspin.SpaceGame.Web/wwwroot
-  displayName: 'Compiler Sass en CSS'
-
-# 4. Minifier les fichiers JavaScript et CSS avec gulp
-- task: Gulp@1
-  displayName: 'Minifier JS et CSS'
-  inputs:
-    gulpFile: 'gulpfile.js'
-    targets: 'default'
-
 # 5. Générer un fichier d’information sur la build
 - script: |
     echo "Pipeline: $(Build.DefinitionName)" > Tailspin.SpaceGame.Web/wwwroot/buildinfo.txt
